@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using SkymeyAPIPost.Data;
+using SkymeyLibs;
 using SkymeyLibs.Models.Tables.Posts;
 
 namespace SkymeyAPIPost.Controllers
@@ -9,13 +11,17 @@ namespace SkymeyAPIPost.Controllers
     [Route("[controller]")]
     public class PostController : ControllerBase
     {
-        private static MongoClient _mongoClient = new MongoClient("mongodb://127.0.0.1:27017");
-        private static ApplicationContext _db = ApplicationContext.Create(_mongoClient.GetDatabase("skymey"));
+        private static MongoClient _mongoClient;
+        private static ApplicationContext _db;
         private readonly ILogger<PostController> _logger;
+        private readonly IOptions<MainSettings> _options;
 
-        public PostController(ILogger<PostController> logger)
+        public PostController(ILogger<PostController> logger, IOptions<MainSettings> options)
         {
             _logger = logger;
+            _options = options;
+            _mongoClient = new MongoClient(_options.Value.MongoDatabase.DBServer);
+            _db = ApplicationContext.Create(_mongoClient.GetDatabase(_options.Value.MongoDatabase.DBName));
         }
 
         [HttpPost]
