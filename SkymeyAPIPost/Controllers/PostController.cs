@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using SkymeyAPIPost.Data;
 using SkymeyLibs;
@@ -9,7 +10,7 @@ namespace SkymeyAPIPost.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class PostController : ControllerBase
+    public class PostController : Controller
     {
         private static MongoClient _mongoClient;
         private static ApplicationContext _db;
@@ -26,15 +27,40 @@ namespace SkymeyAPIPost.Controllers
 
         [HttpPost]
         [Route("CreatePost")]
-        public async Task<string> CreatePost(API_POST POST)
+        public IActionResult CreatePost([FromBody]POST_VIEW_MODEL VIEW_MODEL)
         {
-            POST.API_URL = "url";
-            POST.Title = "title";
-            POST.Description = "description";
-            POST.Content = "content";
-            await _db.AddAsync(POST);
-            await _db.SaveChangesAsync();
-            return "Ok";
+            VIEW_MODEL.API_POST._id = ObjectId.GenerateNewId();
+            _db.API_POST.Add(VIEW_MODEL.API_POST);
+            _db.SaveChanges();
+            foreach(var item in VIEW_MODEL.API_POST_TAGS)
+            {
+                item._id = ObjectId.GenerateNewId();
+                item.POST_ID = VIEW_MODEL.API_POST._id;
+            }
+            _db.API_POST_TAGS.AddRange(VIEW_MODEL.API_POST_TAGS);
+            _db.SaveChanges();
+            foreach (var item in VIEW_MODEL.API_POST_RESPONSES)
+            {
+                item._id = ObjectId.GenerateNewId();
+                item.POST_ID = VIEW_MODEL.API_POST._id;
+            }
+            _db.API_POST_RESPONSES.AddRange(VIEW_MODEL.API_POST_RESPONSES);
+            _db.SaveChanges();
+            foreach (var item in VIEW_MODEL.API_POST_PARAMS)
+            {
+                item._id = ObjectId.GenerateNewId();
+                item.POST_ID = VIEW_MODEL.API_POST._id;
+            }
+            _db.API_POST_PARAMS.AddRange(VIEW_MODEL.API_POST_PARAMS);
+            _db.SaveChanges();
+            foreach (var item in VIEW_MODEL.API_POST_CODE_SAMPLES)
+            {
+                item._id = ObjectId.GenerateNewId();
+                item.POST_ID = VIEW_MODEL.API_POST._id;
+            }
+            _db.API_POST_CODE_SAMPLES.AddRange(VIEW_MODEL.API_POST_CODE_SAMPLES);
+            _db.SaveChanges();
+            return Ok("Ok");
         }
     }
 }
