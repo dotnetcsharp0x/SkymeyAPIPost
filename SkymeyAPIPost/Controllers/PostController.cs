@@ -27,39 +27,51 @@ namespace SkymeyAPIPost.Controllers
 
         [HttpPost]
         [Route("CreatePost")]
-        public IActionResult CreatePost([FromBody]POST_VIEW_MODEL VIEW_MODEL)
+        public async Task<IActionResult> CreatePost(POST_VIEW_MODEL VIEW_MODEL)
         {
-            VIEW_MODEL.API_POST._id = ObjectId.GenerateNewId();
-            _db.API_POST.Add(VIEW_MODEL.API_POST);
-            _db.SaveChanges();
-            foreach(var item in VIEW_MODEL.API_POST_TAGS)
+            try
             {
-                item._id = ObjectId.GenerateNewId();
-                item.POST_ID = VIEW_MODEL.API_POST._id;
+                using (var session = await _mongoClient.StartSessionAsync())
+                {
+                    session.StartTransaction();
+                    VIEW_MODEL.API_POST._id = ObjectId.GenerateNewId();
+                    await _db.API_POST.AddAsync(VIEW_MODEL.API_POST);
+                    //_db.SaveChanges();
+                    foreach (var item in VIEW_MODEL.API_POST_TAGS)
+                    {
+                        item._id = ObjectId.GenerateNewId();
+                        item.POST_ID = VIEW_MODEL.API_POST._id;
+                    }
+                    await _db.API_POST_TAGS.AddRangeAsync(VIEW_MODEL.API_POST_TAGS);
+                    //_db.SaveChanges();
+                    foreach (var item in VIEW_MODEL.API_POST_RESPONSES)
+                    {
+                        item._id = ObjectId.GenerateNewId();
+                        item.POST_ID = VIEW_MODEL.API_POST._id;
+                    }
+                    await _db.API_POST_RESPONSES.AddRangeAsync(VIEW_MODEL.API_POST_RESPONSES);
+                    //_db.SaveChanges();
+                    foreach (var item in VIEW_MODEL.API_POST_PARAMS)
+                    {
+                        item._id = ObjectId.GenerateNewId();
+                        item.POST_ID = VIEW_MODEL.API_POST._id;
+                    }
+                    await _db.API_POST_PARAMS.AddRangeAsync(VIEW_MODEL.API_POST_PARAMS);
+                    //_db.SaveChangesAsync();
+                    foreach (var item in VIEW_MODEL.API_POST_CODE_SAMPLES)
+                    {
+                        item._id = ObjectId.GenerateNewId();
+                        item.POST_ID = VIEW_MODEL.API_POST._id;
+                    }
+                    await _db.API_POST_CODE_SAMPLES.AddRangeAsync(VIEW_MODEL.API_POST_CODE_SAMPLES);
+                    await _db.SaveChangesAsync();
+                    await session.CommitTransactionAsync();
+                }
             }
-            _db.API_POST_TAGS.AddRange(VIEW_MODEL.API_POST_TAGS);
-            _db.SaveChanges();
-            foreach (var item in VIEW_MODEL.API_POST_RESPONSES)
+            catch (Exception ex)
             {
-                item._id = ObjectId.GenerateNewId();
-                item.POST_ID = VIEW_MODEL.API_POST._id;
+                Console.WriteLine(ex.ToString());   
             }
-            _db.API_POST_RESPONSES.AddRange(VIEW_MODEL.API_POST_RESPONSES);
-            _db.SaveChanges();
-            foreach (var item in VIEW_MODEL.API_POST_PARAMS)
-            {
-                item._id = ObjectId.GenerateNewId();
-                item.POST_ID = VIEW_MODEL.API_POST._id;
-            }
-            _db.API_POST_PARAMS.AddRange(VIEW_MODEL.API_POST_PARAMS);
-            _db.SaveChanges();
-            foreach (var item in VIEW_MODEL.API_POST_CODE_SAMPLES)
-            {
-                item._id = ObjectId.GenerateNewId();
-                item.POST_ID = VIEW_MODEL.API_POST._id;
-            }
-            _db.API_POST_CODE_SAMPLES.AddRange(VIEW_MODEL.API_POST_CODE_SAMPLES);
-            _db.SaveChanges();
             return Ok("Ok");
         }
     }
