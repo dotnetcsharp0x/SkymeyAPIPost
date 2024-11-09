@@ -13,7 +13,7 @@ namespace SkymeyAPIPost.Controllers
     [Route("[controller]")]
     public class PostController : Controller
     {
-        IMongoRepository db;
+        private readonly IMongoRepository _db;
         private readonly ILogger<PostController> _logger;
         private readonly IOptions<MainSettings> _options;
 
@@ -21,14 +21,14 @@ namespace SkymeyAPIPost.Controllers
         {
             _logger = logger;
             _options = options;
-            db = new MongoPostRepository(_options);
+            _db = new MongoPostRepository(_options);
         }
 
         [HttpPost]
         [Route("CreatePost")]
         public async Task<IActionResult> CreatePost(POST_VIEW_MODEL VIEW_MODEL)
         {
-            await db.CreatePost(VIEW_MODEL);
+            await _db.CreatePost(VIEW_MODEL);
             return Ok("Ok");
         }
     }
