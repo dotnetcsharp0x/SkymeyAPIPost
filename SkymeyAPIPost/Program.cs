@@ -11,7 +11,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOptions();
 builder.Services.Configure<MainSettings>(builder.Configuration.GetSection("MainSettings"));
-builder.WebHost.UseUrls("http://localhost:5020;https://localhost:5030;");
 
 
 var app = builder.Build();
